@@ -104,13 +104,23 @@ paths:
         - lang: cURL
           source: |
             curl http://localhost:1337/v1/models
-    post:
+  /models/download/{model_id}:
+    get:
       operationId: downloadModel
       tags:
         - Models
-      summary: Download model
+      summary: Download a specific model.
       description: |
         Download a model.
+      parameters:
+        - in: path
+          name: model_id
+          required: true
+          schema:
+            type: string
+            example: mistral-ins-7b-q4
+          description: |
+            The ID of the model to use for this request.
       responses:
         '200':
           description: OK
@@ -121,7 +131,7 @@ paths:
       x-codeSamples:
         - lang: cURL
           source: |
-            curl -X POST http://localhost:1337/v1/models
+            curl -X POST http://localhost:1337/v1/models/download/{model_id}
   /models/{model_id}:
     get:
       operationId: retrieveModel
@@ -139,7 +149,7 @@ paths:
           required: true
           schema:
             type: string
-            example: zephyr-7b
+            example: mistral-ins-7b-q4
           description: |
             The ID of the model to use for this request.
       responses:
@@ -164,13 +174,13 @@ paths:
         Equivalent to OpenAI's delete model. </a>
       parameters:
         - in: path
-          name: model
+          name: model_id
           required: true
           schema:
             type: string
-            example: zephyr-7b
+            example: mistral-ins-7b-q4
           description: |
-            The model to delete
+            The model id to delete
       responses:
         '200':
           description: OK
@@ -182,61 +192,6 @@ paths:
         - lang: cURL
           source: |
             curl -X DELETE http://localhost:1337/v1/models/{model_id}
-  /models/{model_id}/start:
-    put:
-      operationId: startModel
-      tags:
-        - Models
-      summary: Start model
-      description: |
-        Starts an imported model. Loads the model into V/RAM.
-      parameters:
-        - in: path
-          name: model
-          required: true
-          schema:
-            type: string
-            example: zephyr-7b
-          description: |
-            The ID of the model to use for this request
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StartModelResponse'
-      x-codeSamples:
-        - lang: cURL
-          source: |
-            curl -X PUT http://localhost:1337/v1/models/{model_id}/start
-  /models/{model_id}/stop:
-    put:
-      operationId: stopModel
-      tags:
-        - Models
-      summary: Stop model
-      description: |
-        Stop an imported model.
-      parameters:
-        - in: path
-          name: model
-          required: true
-          schema:
-            type: string
-            example: zephyr-7b
-          description: The ID of the model to use for this request
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StopModelResponse'
-      x-codeSamples:
-        - lang: cURL
-          source: |
-            curl -X PUT http://localhost:1337/v1/models/{model_id}/stop
   /threads:
     post:
       operationId: createThread
@@ -252,13 +207,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                messages:
-                  type: array
-                  description: Initial set of messages for the thread.
-                  items:
-                    $ref: '#/components/schemas/ThreadMessageObject'
+              $ref: '#/components/schemas/CreateThreadObject'
       responses:
         '200':
           description: Thread created successfully
@@ -334,7 +283,6 @@ paths:
           required: true
           schema:
             type: string
-            example: thread_abc123
           description: |
             The ID of the thread to retrieve.
       responses:
@@ -348,7 +296,7 @@ paths:
         - lang: cURL
           source: |
             curl http://localhost:1337/v1/threads/{thread_id}
-    post:
+    patch:
       operationId: modifyThread
       tags:
         - Threads
@@ -363,19 +311,18 @@ paths:
           required: true
           schema:
             type: string
-            example: thread_abc123
           description: |
             The ID of the thread to be modified.
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                messages:
-                  type: array
-                  description: Set of messages to update in the thread.
+                title:
+                  type: string
+                  description: Set the title of the thread
                   items:
                     $ref: '#/components/schemas/ThreadMessageObject'
       responses:
@@ -415,7 +362,6 @@ paths:
           required: true
           schema:
             type: string
-            example: thread_abc123
           description: |
             The ID of the thread to be deleted.
       responses:
@@ -429,70 +375,7 @@ paths:
         - lang: cURL
           source: |
             curl -X DELETE http://localhost:1337/v1/threads/{thread_id}
-  /threads/{thread_id}/assistants:
-    get:
-      operationId: getThreadAssistants
-      tags:
-        - Threads
-      summary: Get Thread.Assistants
-      description: |
-        Can achieve this goal by calling Get thread API.
-      parameters:
-        - in: path
-          name: thread_id
-          required: true
-          schema:
-            type: string
-            example: thread_abc123
-          description: The ID of the thread to retrieve.
-      responses:
-        '200':
-          description: Thread details retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetThreadResponse'
-      x-codeSamples:
-        - lang: cURL
-          source: |
-            curl http://localhost:1337/v1/threads/{thread_id}/assistants
-  /threads/{thread_id}/assistants/{assistants_id}:
-    post:
-      operationId: postThreadAssistants
-      tags:
-        - Threads
-      summary: Modify Thread.Assistants
-      description: >
-        Can achieve this goal by calling Modify Assistant API with
-        thread.assistant[].
-  /threads/{thread_id}/:
-    get:
-      operationId: listThreadMessage
-      tags:
-        - Threads
-      summary: List Thread.Messages
-      description: |
-        Can achieve this goal by calling Get Thread API.
-      parameters:
-        - in: path
-          name: thread_id
-          required: true
-          schema:
-            type: string
-            example: thread_abc123
-          description: The ID of the thread to retrieve.
-      responses:
-        '200':
-          description: Thread details retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetThreadResponse'
-      x-codeSamples:
-        - lang: cURL
-          source: |
-            curl http://localhost:1337/v1/threads/{thread_id}
-  /assistants/:
+  /assistants:
     get:
       operationId: listAssistants
       tags:
@@ -504,7 +387,7 @@ paths:
         Equivalent to OpenAI's list assistants. </a>
       responses:
         '200':
-          description: List of threads retrieved successfully
+          description: List of assistants retrieved successfully
           content:
             application/json:
               schema:
@@ -538,58 +421,11 @@ paths:
                       in: []
                       out: []
                     metadata: {}
-        responses: null
       x-codeSamples:
         - lang: cURL
           source: |
             curl http://localhost:1337/v1/assistants \
               -H "Content-Type: application/json" \
-    post:
-      operationId: createAssistant
-      tags:
-        - Assistants
-      summary: Create assistant
-      description: >
-        Create an assistant with a model and instructions. <a href =
-        "https://platform.openai.com/docs/api-reference/assistants/createAssistant">
-        Equivalent to OpenAI's create assistants. </a>
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                models:
-                  type: array
-                  description: >-
-                    List of models associated with the assistant. Jan-specific
-                    property.
-                  items:
-                    type: object
-                    properties:
-                      model_id:
-                        type: string
-                        example: model_0
-      responses:
-        '200':
-          description: null
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateAssistantResponse'
-      x-codeSamples:
-        - lang: cURL
-          source: |
-            curl http://localhost:1337/v1/assistants \
-              -H "Content-Type: application/json" \
-              -d '{
-                  "models": [
-                      {
-                          "model_id": "model_0"
-                      }
-                  ]
-              }'
   /assistants/{assistant_id}:
     get:
       operationId: getAssistant
@@ -606,7 +442,7 @@ paths:
           required: true
           schema:
             type: string
-            example: asst_abc123
+            example: jan
           description: |
             The ID of the assistant to retrieve.
       responses:
@@ -621,100 +457,6 @@ paths:
           source: |
             curl http://localhost:1337/v1/assistants/{assistant_id} \
               -H "Content-Type: application/json" \
-    post:
-      operationId: modifyAssistant
-      tags:
-        - Assistants
-      summary: Modify assistant
-      description: >
-        Modifies an assistant. <a href =
-        "https://platform.openai.com/docs/api-reference/assistants/modifyAssistant">
-        Equivalent to OpenAI's modify assistant. </a>
-      parameters:
-        - in: path
-          name: assistant_id
-          required: true
-          schema:
-            type: string
-            example: asst_abc123
-          description: |
-            The ID of the assistant to modify.
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                models:
-                  type: array
-                  description: >-
-                    List of models associated with the assistant. Jan-specific
-                    property.
-                  items:
-                    type: object
-                    properties:
-                      model_id:
-                        type: string
-                        example: model_0
-                name:
-                  type: string
-                  description: Name of the assistant.
-                  example: Physics Tutor
-                instructions:
-                  type: string
-                  description: A system prompt for the assistant.
-                  example: Be concise!
-      responses:
-        '200':
-          description: null
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModifyAssistantResponse'
-      x-codeSamples:
-        - lang: cURL
-          source: |
-            curl http://localhost:1337/v1/assistants/{assistant_id} \
-              -H "Content-Type: application/json" \
-              -d '{
-                  "models": [
-                      {
-                          "model_id": "model_0"
-                      }
-                  ],
-                  "name": "Physics Tutor",
-                  "instructions": "Be concise!",
-                }'
-    delete:
-      operationId: deleteAssistant
-      tags:
-        - Assistants
-      summary: Delete assistant
-      description: >
-        Delete an assistant. <a href =
-        "https://platform.openai.com/docs/api-reference/assistants/deleteAssistant">
-        Equivalent to OpenAI's delete assistant. </a>
-      parameters:
-        - in: path
-          name: assistant_id
-          required: true
-          schema:
-            type: string
-            example: asst_abc123
-          description: |
-            The ID of the assistant to delete.
-      responses:
-        '200':
-          description: Deletion status
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeleteAssistantResponse'
-      x-codeSamples:
-        - lang: cURL
-          source: |
-            curl -X DELETE http://localhost:1337/v1/assistants/{assistant_id}
   /threads/{thread_id}/messages:
     get:
       operationId: listMessages
@@ -731,7 +473,6 @@ paths:
           required: true
           schema:
             type: string
-            example: thread_abc123
           description: |
             The ID of the thread from which to retrieve messages.
       responses:
@@ -761,7 +502,6 @@ paths:
           required: true
           schema:
             type: string
-            example: thread_abc123
           description: |
             The ID of the thread to which the message will be posted.
       requestBody:
@@ -820,7 +560,6 @@ paths:
           required: true
           schema:
             type: string
-            example: thread_abc123
           description: |
             The ID of the thread containing the message.
         - in: path
@@ -828,7 +567,6 @@ paths:
           required: true
           schema:
             type: string
-            example: msg_abc123
           description: |
             The ID of the message to retrieve.
       responses:
@@ -843,98 +581,6 @@ paths:
           source: >
             curl
             http://localhost:1337/v1/threads/{thread_id}/messages/{message_id} \
-              -H "Content-Type: application/json"
-  /threads/{thread_id}/messages/{message_id}/files:
-    get:
-      operationId: listMessageFiles
-      tags:
-        - Messages
-      summary: |
-        List message files
-      description: >
-        Returns a list of message files.  <a  href =
-        "https://platform.openai.com/docs/api-reference/messages/listMessageFiles">
-        Equivalent to OpenAI's list message files. </a>
-      parameters:
-        - in: path
-          name: thread_id
-          required: true
-          schema:
-            type: string
-            example: thread_abc123
-          description: |
-            The ID of the thread containing the message.
-        - in: path
-          name: message_id
-          required: true
-          schema:
-            type: string
-            example: msg_abc123
-          description: |
-            The ID of the message whose files are to be listed.
-      responses:
-        '200':
-          description: List of files retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListMessageFilesResponse'
-      x-codeSamples:
-        - lang: cURL
-          source: >
-            curl
-            http://localhost:1337/v1/threads/{thread_id}/messages/{message_id}/files
-            \
-              -H "Content-Type: application/json"
-  /threads/{thread_id}/messages/{message_id}/files/{file_id}:
-    get:
-      operationId: retrieveMessageFile
-      tags:
-        - Messages
-      summary: Retrieve message file
-      description: >
-        Retrieves a file associated with a specific message in a thread.  <a 
-        href =
-        "https://platform.openai.com/docs/api-reference/messages/getMessageFile">
-        Equivalent to OpenAI's retrieve message file. </a>
-      parameters:
-        - in: path
-          name: thread_id
-          required: true
-          schema:
-            type: string
-            example: thread_abc123
-          description: |
-            The ID of the thread containing the message.
-        - in: path
-          name: message_id
-          required: true
-          schema:
-            type: string
-            example: msg_abc123
-          description: |
-            The ID of the message associated with the file.
-        - in: path
-          name: file_id
-          required: true
-          schema:
-            type: string
-            example: file-abc123
-          description: |
-            The ID of the file to retrieve.
-      responses:
-        '200':
-          description: File retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageFileObject'
-      x-codeSamples:
-        - lang: cURL
-          source: >
-            curl
-            http://localhost:1337/v1/threads/{thread_id}/messages/{message_id}/files/{file_id}
-            \
               -H "Content-Type: application/json"
 x-webhooks:
   ModelObject:
@@ -1251,18 +897,10 @@ components:
     DownloadModelResponse:
       type: object
       properties:
-        id:
+        message:
           type: string
-          description: The identifier of the model that was started.
-          example: model-zephyr-7B
-        object:
-          type: string
-          description: Type of the object, indicating it's a model.
-          default: model
-        state:
-          type: string
-          description: The current state of the model after the start operation.
-          example: downloaded
+          description: Message indicates Jan starting download corresponding model.
+          example: Starting download mistral-ins-7b-q4
     GetModelResponse:
       type: object
       properties:
@@ -1465,44 +1103,6 @@ components:
           type: boolean
           description: Indicates whether the model was successfully deleted.
           example: true
-    StartModelResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The identifier of the model that was started.
-          example: model-zephyr-7B
-        object:
-          type: string
-          description: Type of the object, indicating it's a model.
-          default: model
-        state:
-          type: string
-          description: The current state of the model after the start operation.
-          example: running
-      required:
-        - id
-        - object
-        - state
-    StopModelResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The identifier of the model that was started.
-          example: model-zephyr-7B
-        object:
-          type: string
-          description: Type of the object, indicating it's a model.
-          default: model
-        state:
-          type: string
-          description: The current state of the model after the start operation.
-          example: stopped
-      required:
-        - id
-        - object
-        - state
     ThreadObject:
       type: object
       properties:
@@ -1561,26 +1161,64 @@ components:
           description: |
             Metadata associated with the thread, defaults to an empty object.
           example: {}
-    ThreadMessageObject:
+    CreateThreadObject:
       type: object
       properties:
-        role:
+        object:
           type: string
-          description: |
-            "Role of the sender, either 'user' or 'assistant'."
-          enum:
-            - user
-            - assistant
-        content:
+          description: Type of the object, indicating it's a thread.
+          example: thread
+        title:
           type: string
-          description: |
-            "Text content of the message."
-        file_ids:
+          description: >
+            A brief summary or description of the thread, defaults to an empty
+            string.
+          example: funny physics joke
+        assistants:
           type: array
+          description: assistant involved in the thread
           items:
-            type: string
+            properties:
+              assistant_id:
+                type: string
+                description: |
+                  The identifier of assistant, defaults to "jan"
+                example: jan
+              assistant_name:
+                type: string
+                description: |
+                  The name of assistant, defaults to "Jan"
+                example: Jan
+              instructions:
+                type: string
+                description: >
+                  The instruction of assistant, defaults to "Be my grammar
+                  corrector"
+              model:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Model id
+                    example: mistral-ins-7b-q4
+                  settings:
+                    type: object
+                    description: >
+                      Defaults to and overrides assistant.json's "settings" (and
+                      if none, then model.json "settings")
+                  parameters:
+                    type: object
+                    description: >
+                      Defaults to and overrides assistant.json's "parameters"
+                      (and if none, then model.json "parameters")
+                  engine:
+                    type: string
+                    description: Engine id
+                    example: nitro
+        metadata:
+          type: object
           description: |
-            "Array of file IDs associated with the message, if any."
+            Metadata associated with the thread, defaults to an empty object.
     CreateThreadResponse:
       type: object
       properties:
@@ -1634,6 +1272,41 @@ components:
             type: string
           description: List of messages within the thread.
           example: []
+    DeleteThreadResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The identifier of the deleted thread.
+          example: thread_abc123
+        object:
+          type: string
+          description: Type of the object, indicating the thread has been deleted.
+          example: thread.deleted
+        deleted:
+          type: boolean
+          description: Indicates whether the thread was successfully deleted.
+          example: true
+    ThreadMessageObject:
+      type: object
+      properties:
+        role:
+          type: string
+          description: |
+            "Role of the sender, either 'user' or 'assistant'."
+          enum:
+            - user
+            - assistant
+        content:
+          type: string
+          description: |
+            "Text content of the message."
+        file_ids:
+          type: array
+          items:
+            type: string
+          description: |
+            "Array of file IDs associated with the message, if any."
     ModifyThreadResponse:
       type: object
       properties:
@@ -1655,81 +1328,6 @@ components:
           type: object
           description: Metadata associated with the modified thread.
           example: {}
-    DeleteThreadResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The identifier of the deleted thread.
-          example: thread_abc123
-        object:
-          type: string
-          description: Type of the object, indicating the thread has been deleted.
-          example: thread.deleted
-        deleted:
-          type: boolean
-          description: Indicates whether the thread was successfully deleted.
-          example: true
-    CreateAssistantResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The identifier of the assistant.
-          example: asst_abc123
-        object:
-          type: string
-          description: Type of the object, indicating it's an assistant.
-          default: assistant
-        version:
-          type: integer
-          description: Version number of the assistant.
-          example: 1
-        created_at:
-          type: integer
-          format: int64
-          description: Unix timestamp representing the creation time of the assistant.
-          example: 1698984975
-        name:
-          type: string
-          description: Name of the assistant.
-          example: Math Tutor
-        description:
-          type: string
-          description: Description of the assistant. Can be null.
-          example: null
-        avatar:
-          type: string
-          description: URL of the assistant's avatar. Jan-specific property.
-          example: https://pic.png
-        models:
-          type: array
-          description: List of models associated with the assistant. Jan-specific property.
-          items:
-            type: object
-            properties:
-              model_id:
-                type: string
-                example: model_0
-        instructions:
-          type: string
-          description: A system prompt for the assistant.
-          example: Be concise
-        events:
-          type: object
-          description: Event subscription settings for the assistant.
-          properties:
-            in:
-              type: array
-              items:
-                type: string
-            out:
-              type: array
-              items:
-                type: string
-        metadata:
-          type: object
-          description: Metadata associated with the assistant.
     RetrieveAssistantResponse:
       type: object
       properties:
@@ -1790,81 +1388,6 @@ components:
         metadata:
           type: object
           description: Metadata associated with the assistant.
-    ModifyAssistantResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The identifier of the assistant.
-          example: asst_abc123
-        object:
-          type: string
-          description: Type of the object, indicating it's an assistant.
-          default: assistant
-        version:
-          type: integer
-          description: Version number of the assistant.
-          example: 1
-        created_at:
-          type: integer
-          format: int64
-          description: Unix timestamp representing the creation time of the assistant.
-          example: 1698984975
-        name:
-          type: string
-          description: Name of the assistant.
-          example: Physics Tutor
-        description:
-          type: string
-          description: Description of the assistant. Can be null.
-          example: null
-        avatar:
-          type: string
-          description: URL of the assistant's avatar. Jan-specific property.
-          example: https://pic.png
-        models:
-          type: array
-          description: List of models associated with the assistant. Jan-specific property.
-          items:
-            type: object
-            properties:
-              model_id:
-                type: string
-                example: model_0
-        instructions:
-          type: string
-          description: A system prompt for the assistant.
-          example: Be concise!
-        events:
-          type: object
-          description: Event subscription settings for the assistant.
-          properties:
-            in:
-              type: array
-              items:
-                type: string
-            out:
-              type: array
-              items:
-                type: string
-        metadata:
-          type: object
-          description: Metadata associated with the assistant.
-    DeleteAssistantResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The identifier of the deleted assistant.
-          example: asst_abc123
-        object:
-          type: string
-          description: Type of the object, indicating the assistant has been deleted.
-          example: assistant.deleted
-        deleted:
-          type: boolean
-          description: Indicates whether the assistant was successfully deleted.
-          example: true
     ListMessageObject:
       type: object
       properties:
@@ -2078,37 +1601,6 @@ components:
           type: object
           description: Metadata associated with the message.
           example: {}
-    MessageFileObject:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The identifier of the file.
-          example: file-abc123
-        object:
-          type: string
-          description: Type of the object, indicating it's a thread message file.
-          example: thread.message.file
-        created_at:
-          type: integer
-          format: int64
-          description: Unix timestamp representing the creation time of the file.
-          example: 1699061776
-        message_id:
-          type: string
-          description: Identifier of the message to which this file is associated.
-          example: msg_abc123
-    ListMessageFilesResponse:
-      type: object
-      properties:
-        object:
-          type: string
-          description: Type of the object, indicating it's a list.
-          default: list
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/MessageFileObject'
     ModelObject:
       type: object
       properties:
