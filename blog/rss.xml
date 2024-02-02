@@ -4,7 +4,7 @@
         <title>Jan Blog</title>
         <link>https://jan.ai/blog</link>
         <description>Jan Blog</description>
-        <lastBuildDate>Tue, 30 Jan 2024 02:39:08 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 02 Feb 2024 02:03:45 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
@@ -12,7 +12,7 @@
             <title><![CDATA[TODO]]></title>
             <link>https://jan.ai/blog/README</link>
             <guid>https://jan.ai/blog/README</guid>
-            <pubDate>Tue, 30 Jan 2024 02:39:08 GMT</pubDate>
+            <pubDate>Fri, 02 Feb 2024 02:03:45 GMT</pubDate>
         </item>
     </channel>
 </rss>
