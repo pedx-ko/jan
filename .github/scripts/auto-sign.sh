@@ -19,3 +19,5 @@ fi
 if [ -f "./node_modules/hnswlib-node/build/Release/obj.target/addon/src/addon.o" ]; then
     codesign -s "$DEVELOPER_ID" --options=runtime ./node_modules/hnswlib-node/build/Release/obj.target/addon/src/addon.o \;
 fi
+
+exit 0
