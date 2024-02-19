@@ -177,7 +177,6 @@ export default function EventHandler({ children }: { children: ReactNode }) {
       )
       if (message.status === MessageStatus.Pending) {
         if (message.content.length) {
-          updateThreadWaiting(message.thread_id, false)
           setIsGeneratingResponse(false)
         }
         return
@@ -282,11 +281,9 @@ export default function EventHandler({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    console.log('Registering events')
     if (window.core?.events) {
       events.on(MessageEvent.OnMessageResponse, onNewMessageResponse)
       events.on(MessageEvent.OnMessageUpdate, onMessageResponseUpdate)
-
       events.on(ModelEvent.OnModelReady, onModelReady)
       events.on(ModelEvent.OnModelFail, onModelInitFailed)
       events.on(ModelEvent.OnModelStopped, onModelStopped)

@@ -12,8 +12,9 @@ import {
   DownloadEvent,
   DownloadRoute,
   ModelEvent,
+  DownloadState,
 } from '@janhq/core'
-import { DownloadState } from '@janhq/core/.'
+
 import { extractFileName } from './helpers/path'
 
 /**
@@ -434,20 +435,20 @@ export default class JanModelExtension extends ModelExtension {
   handleDesktopEvents() {
     if (window && window.electronAPI) {
       window.electronAPI.onFileDownloadUpdate(
-        async (_event: string, state: any | undefined) => {
+        async (_event: string, state: DownloadState | undefined) => {
           if (!state) return
-          state.downloadState = 'update'
+          state.downloadState = 'downloading'
           events.emit(DownloadEvent.onFileDownloadUpdate, state)
         }
       )
       window.electronAPI.onFileDownloadError(
-        async (_event: string, state: any) => {
+        async (_event: string, state: DownloadState) => {
           state.downloadState = 'error'
           events.emit(DownloadEvent.onFileDownloadError, state)
         }
       )
       window.electronAPI.onFileDownloadSuccess(
-        async (_event: string, state: any) => {
+        async (_event: string, state: DownloadState) => {
           state.downloadState = 'end'
           events.emit(DownloadEvent.onFileDownloadSuccess, state)
         }
