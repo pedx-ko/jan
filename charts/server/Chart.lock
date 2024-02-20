@@ -1,6 +1,6 @@
 dependencies:
 - name: common
   repository: oci://ghcr.io/janhq/charts
-  version: 0.1.2
-digest: sha256:35e98bde174130787755b0f8ea2359b7b6790d965a7157c2f7cabf1bc8c04471
-generated: "2024-02-20T16:20:37.6530108+07:00"
+  version: 0.1.3
+digest: sha256:cc8bdbf1785b52e5899e9602444294e8d3c9bb2ba9c85f3ba4681f5a172f1fa1
+generated: "2024-02-21T01:14:15.760635032+07:00"

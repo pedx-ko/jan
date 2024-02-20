@@ -1,5 +1,5 @@
 common:
-  imageTag: v0.4.6-cpu
+  imageTag: v0.4.6-cuda-12.2.0
   # DO NOT CHANGE THE LINE ABOVE. MAKE ALL CHANGES BELOW
 
   # Global pvc for all workload
